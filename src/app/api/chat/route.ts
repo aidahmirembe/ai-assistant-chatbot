@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { VELA_SYSTEM_PROMPT, buildUserContext } from "@/lib/prompts";
 
+// Limits keep a shared demo key from being drained by very long chats.
+const MAX_MESSAGES = 24;
+const MAX_CONTENT_CHARS = 6000;
+
 type ChatMessage = { role: "user" | "assistant" | "system"; content: string };
 
 interface ChatBody {
@@ -14,6 +18,27 @@ interface ChatBody {
     openTasks?: { title: string; priority: string; status: string }[];
     recentNotes?: { title: string }[];
   };
+}
+
+
+/** Turn a provider error body into a short, readable message. */
+function friendlyUpstreamMessage(status: number, detail: string): string {
+  const text = detail.trim();
+
+  // A web page (HTML) usually means the Base URL points to the wrong address.
+  if (text.startsWith("<")) {
+    return "The provider returned a web page instead of an API answer. Check that the Base URL is correct (for example https://api.groq.com/openai/v1).";
+  }
+
+  try {
+    const parsed = JSON.parse(text) as { error?: { message?: string } | string };
+    if (typeof parsed.error === "string") return parsed.error;
+    if (parsed.error?.message) return parsed.error.message;
+  } catch {
+    // not JSON, fall through
+  }
+
+  return text ? text.slice(0, 300) : `Provider returned ${status}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -70,9 +95,9 @@ export async function POST(req: NextRequest) {
     temperature: 0.7,
     messages: [
       { role: "system", content: systemContent },
-      ...body.messages.map((m) => ({
+      ...body.messages.slice(-MAX_MESSAGES).map((m) => ({
         role: m.role,
-        content: m.content,
+        content: String(m.content ?? "").slice(0, MAX_CONTENT_CHARS),
       })),
     ],
   };
@@ -116,7 +141,7 @@ export async function POST(req: NextRequest) {
     return Response.json(
       {
         error: "UPSTREAM_ERROR",
-        message: detail || `Provider returned ${upstream.status}`,
+        message: friendlyUpstreamMessage(upstream.status, detail),
       },
       { status: upstream.status || 502 }
     );

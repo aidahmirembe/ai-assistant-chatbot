@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckSquare, FileText, Lightbulb, Sparkles } from "lucide-react";
 import { Markdown } from "@/components/Markdown";
@@ -19,7 +19,7 @@ export function ChatView({
   const activeId = useVelaStore((s) => s.activeConversationId);
   const userName = useVelaStore((s) => s.settings.userName);
   const conversation = conversations.find((c) => c.id === activeId);
-  const messages = conversation?.messages ?? [];
+  const messages = useMemo(() => conversation?.messages ?? [], [conversation]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

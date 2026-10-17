@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, KeyRound, Sparkles } from "lucide-react";
 import { useVelaStore } from "@/lib/store";
@@ -16,9 +16,13 @@ export function SettingsModal({
   const setSettings = useVelaStore((s) => s.setSettings);
   const [draft, setDraft] = useState(settings);
 
-  useEffect(() => {
+  // Refresh the draft each time the modal opens (adjusting state during render,
+  // the pattern React recommends instead of setState inside an effect).
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setDraft(settings);
-  }, [open, settings]);
+  }
 
   const save = () => {
     setSettings(draft);
