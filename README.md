@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| **Live demo** | `ADD-YOUR-VERCEL-LINK-HERE` |
-| **Demo video** | `ADD-YOUR-VIDEO-LINK-HERE` |
+| **Live demo** | https://ai-assistant-chatbot-stu7.vercel.app |
+| **Demo video** | https://drive.google.com/file/d/1G3UUO8sTcNoG7J4BFFenyc6pzBK1yrJK/view?usp=drive_link |
 | **Repository** | https://github.com/aidahmirembe/ai-assistant-chatbot |
 | **Built by** | Mirembe Aidah (solo) |
 
